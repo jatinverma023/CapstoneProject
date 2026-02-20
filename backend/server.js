@@ -40,8 +40,12 @@ app.use('/api/v1/submissions', require('./routes/submissions'));
 app.use('/api/v1/chatbot', require('./routes/chatbot')); // ⬅️ ADD THIS LINE
 
 // 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Route not found' });
+app.get('/', (req, res) => {
+  res.json({
+    service: "Smart Assignment Backend",
+    status: "Running",
+    api: "/api/v1"
+  });
 });
 
 // Error handler

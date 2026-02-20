@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/v1';
+import api from "./api";
 
+export const getMySubmissions = async () => {
+  const response = await api.get("/submissions/my");
+  return response.data;
+};
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
