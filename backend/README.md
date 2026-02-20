@@ -10,6 +10,8 @@ A comprehensive backend API for managing assignments, submissions, and feedback 
 - **Submission System**: Students can submit assignments with text and file uploads
 - **Grading System**: Teachers can grade submissions with rubrics and feedback
 - **File Uploads**: Support for multiple file types (images, PDFs, documents)
+- **AI Chatbot**: Integrated Gemini AI for student assistance and Q&A
+- **Analytics Dashboard**: Comprehensive insights on student performance and assignment statistics
 - **Security**: JWT authentication, password hashing, input validation
 
 ## Tech Stack
@@ -97,6 +99,9 @@ The server will start on `http://localhost:5000` (or your configured port).
 backend/
 ├── config/
 │   └── db.js                 # Database connection
+├── controllers/
+│   ├── analyticsController.js # Analytics logic
+│   └── assignmentController.js # Assignment logic
 ├── middleware/
 │   ├── auth.js              # Authentication middleware
 │   └── errorHandler.js      # Error handling middleware
@@ -106,11 +111,16 @@ backend/
 │   ├── Assignment.js        # Assignment model
 │   └── Submission.js        # Submission model
 ├── routes/
+│   ├── analytics.js         # Analytics routes
 │   ├── auth.js              # Authentication routes
-│   ├── users.js             # User management routes
 │   ├── assignments.js       # Assignment routes
-│   └── submissions.js       # Submission routes
+│   ├── chatbot.js           # AI chatbot routes
+│   ├── submissions.js       # Submission routes
+│   └── users.js             # User management routes
+├── services/
+│   └── chatbotService.js    # AI chatbot service
 ├── uploads/                 # File uploads directory
+├── test-gemini.js           # Gemini API test script
 ├── .env.example             # Environment variables template
 ├── package.json             # Dependencies and scripts
 ├── server.js                # Main application file
@@ -119,13 +129,14 @@ backend/
 
 ## Environment Variables
 
-| Variable     | Description               | Default               |
-| ------------ | ------------------------- | --------------------- |
-| `MONGO_URI`  | MongoDB connection string | Required              |
-| `JWT_SECRET` | JWT secret key            | Required              |
-| `PORT`       | Server port               | 5000                  |
-| `NODE_ENV`   | Environment               | development           |
-| `CLIENT_URL` | Frontend URL for CORS     | http://localhost:5173 |
+| Variable         | Description               | Default               |
+| ---------------- | ------------------------- | --------------------- |
+| `MONGO_URI`      | MongoDB connection string | Required              |
+| `JWT_SECRET`     | JWT secret key            | Required              |
+| `PORT`           | Server port               | 5000                  |
+| `NODE_ENV`       | Environment               | development           |
+| `CLIENT_URL`     | Frontend URL for CORS     | http://localhost:5173 |
+| `GEMINI_API_KEY` | Google Gemini API key     | Required for chatbot  |
 
 ## Contributing
 
