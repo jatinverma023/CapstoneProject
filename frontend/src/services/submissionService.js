@@ -1,104 +1,71 @@
-import axios from 'axios';
-
 import api from "./api";
 
-export const getMySubmissions = async () => {
-  const response = await api.get("/submissions/my");
-  return response.data;
-};
-const getAuthHeader = () => {
-  const token = localStorage.getItem('token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
-};
-
 export const submissionService = {
-  // Submit new assignment
   submit: async (formData) => {
     try {
-      const assignmentId = formData.get('assignment_id');
-      
+      const assignmentId = formData.get("assignment_id");
+
       const backendFormData = new FormData();
-      backendFormData.append('text_submission', formData.get('content'));
-      
-      const file = formData.get('file');
+      backendFormData.append("text_submission", formData.get("content"));
+
+      const file = formData.get("file");
       if (file) {
-        backendFormData.append('files', file);
+        backendFormData.append("files", file);
       }
 
-      const response = await axios.post(
-        `${API_URL}/submissions/submit/${assignmentId}`, 
+      const response = await api.post(
+        `/submissions/submit/${assignmentId}`,
         backendFormData,
         {
           headers: {
-            ...getAuthHeader(),
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         }
       );
+
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to submit assignment');
+      throw new Error(error.response?.data?.message || "Failed to submit assignment");
     }
   },
 
-  // Get my submissions (student)
   getMySubmissions: async () => {
     try {
-      const response = await axios.get(`${API_URL}/submissions/my`, {
-        headers: getAuthHeader(),
-      });
-      return { 
-        submissions: response.data.submissions || [] 
-      };
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch submissions');
-    }
-  },
-
-  // Get submissions by assignment (teacher)
-  getSubmissionsByAssignment: async (assignmentId) => {
-    try {
-      const response = await axios.get(`${API_URL}/submissions/assignment/${assignmentId}`, {
-        headers: getAuthHeader(),
-      });
-      return { 
-        submissions: response.data.submissions || [] 
-      };
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch submissions');
-    }
-  },
-
-  // Get submission by ID
-  getById: async (id) => {
-    try {
-      const response = await axios.get(`${API_URL}/submissions/${id}`, {
-        headers: getAuthHeader(),
-      });
-      return { submission: response.data.submission };
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to fetch submission');
-    }
-  },
-
-  // Grade submission (teacher)
-  grade: async (id, gradeData) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/submissions/${id}/grade`, 
-        gradeData,
-        {
-          headers: getAuthHeader(),
-        }
-      );
+      const response = await api.get("/submissions/my");
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to grade submission');
+      throw new Error(error.response?.data?.message || "Failed to fetch submissions");
     }
   },
 
-  // Update submission - not implemented
-  update: async (id, formData) => {
-    throw new Error('Resubmission not allowed after initial submission');
+  getSubmissionsByAssignment: async (assignmentId) => {
+    try {
+      const response = await api.get(`/submissions/assignment/${assignmentId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to fetch submissions");
+    }
+  },
+
+  getById: async (id) => {
+    try {
+      const response = await api.get(`/submissions/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to fetch submission");
+    }
+  },
+
+  grade: async (id, gradeData) => {
+    try {
+      const response = await api.post(`/submissions/${id}/grade`, gradeData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to grade submission");
+    }
+  },
+
+  update: async () => {
+    throw new Error("Resubmission not allowed after initial submission");
   },
 };
