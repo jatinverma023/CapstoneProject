@@ -20,8 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
+app.use('/uploads', express.static('uploads'));
 // Health check
 app.get('/api/v1/health', (req, res) => {
   res.json({ 

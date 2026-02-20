@@ -72,8 +72,13 @@ router.post('/submit/:assignmentId', protect, authorize('student'), upload.array
     }
 
     // Process uploaded files
-    const file_urls = (req.files || []).map(f => `/uploads/submissions/${f.filename}`);
+const baseUrl =
+  process.env.BASE_URL ||
+  `${req.protocol}://${req.get("host")}`;
 
+const file_urls = (req.files || []).map(
+  f => `${baseUrl}/uploads/submissions/${f.filename}`
+);
     // Check if late
     const submitted_at = new Date();
     const is_late = submitted_at > assignment.due_date;
