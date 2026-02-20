@@ -274,24 +274,20 @@ module.exports = {
 
     let isAssignmentRelated = false;
 
-    if (assignmentContext) {
-      const msgLower = message.toLowerCase();
+if (assignmentContext) {
+  const msgLower = message.toLowerCase();
+  const title = assignmentContext.title?.toLowerCase() || "";
+  const desc = assignmentContext.description?.toLowerCase() || "";
 
-      const assignmentKeywords = [
-        "assignment",
-        "requirement",
-        "rubric",
-        "marks",
-        "word",
-        "deadline",
-        assignmentContext.title?.toLowerCase(),
-      ];
-
-      isAssignmentRelated = assignmentKeywords.some(
-        (keyword) =>
-          keyword && msgLower.includes(keyword)
-      );
-    }
+  isAssignmentRelated =
+    msgLower.includes("assignment") ||
+    msgLower.includes("this task") ||
+    msgLower.includes("requirement") ||
+    msgLower.includes("marks") ||
+    msgLower.includes("rubric") ||
+    msgLower.includes(title) ||
+    msgLower.includes(desc.split(" ").slice(0,5).join(" "));
+}
 
     /* ================= CREATIVE TASK DETECTION ================= */
 
@@ -303,13 +299,20 @@ module.exports = {
 
     /* ================= BUILD PROMPT ================= */
 
-    let prompt = `
+ let prompt = `
 You are an intelligent AI Academic Assistant.
 
-Rules:
-- If question is about the assignment, use assignment context carefully.
-- If question is unrelated, ignore assignment details.
-- Be clear and helpful.
+Behavior Rules:
+
+1. If the student's question is related to the current assignment,
+   use the assignment details carefully.
+
+2. If the student's question is NOT related to the assignment,
+   completely ignore assignment details and answer normally.
+
+3. Never force assignment context into unrelated questions.
+
+Be clear, accurate, and helpful.
 `;
 
     // Inject assignment ONLY if related
