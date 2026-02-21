@@ -27,65 +27,67 @@ const upload = multer({
 // @route   POST /api/v1/submissions/submit/:assignmentId
 // @desc    Submit assignment (Student only)
 // @access  Private/Student
-router.post('/submit/:assignmentId', protect, authorize('student'), upload.array('files', 5), async (req, res) => {
-  try {
-    const { assignmentId } = req.params;
-    const { text_submission } = req.body;
+router.post(
+  "/submit/:assignmentId",
+  protect,
+  authorize("student"),
+  upload.array("files", 5),
+  async (req, res) => {
+    try {
+      const { assignmentId } = req.params;
+      const { text_submission } = req.body;
 
-    // Find assignment
-    const assignment = await Assignment.findById(assignmentId);
-    if (!assignment) {
-      return res.status(404).json({ 
+      const assignment = await Assignment.findById(assignmentId);
+      if (!assignment) {
+        return res.status(404).json({
+          success: false,
+          message: "Assignment not found",
+        });
+      }
+
+      const existingSubmission = await Submission.findOne({
+        assignment_id: assignmentId,
+        student_id: req.user._id,
+      });
+
+      if (existingSubmission) {
+        return res.status(400).json({
+          success: false,
+          message: "You have already submitted this assignment",
+        });
+      }
+
+      // ✅ THIS LINE IS REQUIRED
+      const file_urls = (req.files || []).map(file => file.path);
+
+      const submitted_at = new Date();
+      const is_late = submitted_at > assignment.due_date;
+
+      const submission = await Submission.create({
+        assignment_id: assignmentId,
+        student_id: req.user._id,
+        text_submission: text_submission || "",
+        file_urls: file_urls,   // explicit
+        submitted_at,
+        is_late,
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Assignment submitted successfully",
+        submission,
+      });
+
+    } catch (error) {
+      console.error("Submit assignment error:", error);
+      res.status(500).json({
         success: false,
-        message: 'Assignment not found' 
+        message: "Error submitting assignment",
+        error: error.message,
       });
     }
-
-    // Check if already submitted
-    const existingSubmission = await Submission.findOne({
-      assignment_id: assignmentId,
-      student_id: req.user._id
-    });
-
-    if (existingSubmission) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'You have already submitted this assignment' 
-      });
-    }
-
-    // Process uploaded files
-
-    // Check if late
-    const submitted_at = new Date();
-    const is_late = submitted_at > assignment.due_date;
-
-    // Create submission
-    const submission = await Submission.create({
-      assignment_id: assignmentId,
-      student_id: req.user._id,
-      text_submission: text_submission || '',
-      file_urls,
-      submitted_at,
-      is_late
-    });
-
-    await submission.populate('assignment_id', 'title due_date');
-
-    res.status(201).json({
-      success: true,
-      message: 'Assignment submitted successfully',
-      submission
-    });
-  } catch (error) {
-    console.error('Submit assignment error:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Error submitting assignment',
-      error: error.message 
-    });
   }
-});
+);
 
 // @route   GET /api/v1/submissions/my
 // @desc    Get student's own submissions
