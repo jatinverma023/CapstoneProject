@@ -14,7 +14,7 @@ const GradeSubmission = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
+  const BACKEND_BASE = import.meta.env.VITE_API_URL.replace("/api/v1", "");
   const [gradeData, setGradeData] = useState({
     grade: "",
     feedback: "",
@@ -48,7 +48,7 @@ const GradeSubmission = () => {
                 name: item.name,
                 maxMarks: item.maxMarks,
                 score: 0,
-              })
+              }),
             ),
           }));
         }
@@ -116,7 +116,7 @@ const GradeSubmission = () => {
       setSuccess("Submission graded successfully!");
       setTimeout(() => {
         navigate(
-          `/teacher/assignments/${submission.assignment_id._id}/submissions`
+          `/teacher/assignments/${submission.assignment_id._id}/submissions`,
         );
       }, 1500);
     } catch (err) {
@@ -133,7 +133,7 @@ const GradeSubmission = () => {
   const student = submission.student_id;
   const totalRubricScore = gradeData.rubricScores.reduce(
     (sum, item) => sum + item.score,
-    0
+    0,
   );
 
   return (
@@ -261,7 +261,7 @@ const GradeSubmission = () => {
                     {submission.file_urls.map((url, index) => (
                       <a
                         key={index}
-                        href={`${url.startsWith("http") ? "" : "http://localhost:5000"}${url}`}
+                        href={`${url.startsWith("http") ? "" : BACKEND_BASE}${url}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"
@@ -280,7 +280,7 @@ const GradeSubmission = () => {
                     Attachment:
                   </p>
                   <a
-                    href={`${submission.file_url.startsWith("http") ? "" : "http://localhost:5000"}${submission.file_url}`}
+                    href={`${submission.file_url.startsWith("http") ? "" : BACKEND_BASE}${submission.file_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"
@@ -366,7 +366,7 @@ const GradeSubmission = () => {
                     <p className="text-center mt-2 text-sm text-gray-600">
                       {calculateGradePercentage(
                         gradeData.grade,
-                        assignment.maxMarks
+                        assignment.maxMarks,
                       )}
                       %
                     </p>
