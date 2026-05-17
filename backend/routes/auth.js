@@ -13,7 +13,7 @@ router.post('/register', [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('email').isEmail().withMessage('Valid email is required'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('role').isIn(['teacher', 'student', 'admin']).withMessage('Invalid role')
+  body('role').isIn(['teacher', 'student']).withMessage('Invalid role')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -51,7 +51,7 @@ router.post('/register', [
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
+      { expiresIn: '2h' }
     );
 
     res.status(201).json({
@@ -120,7 +120,7 @@ router.post('/login', [
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET, 
-      { expiresIn: '7d' }
+      { expiresIn: '2h' }
     );
 
     res.json({

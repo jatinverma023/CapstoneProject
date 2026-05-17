@@ -20,12 +20,11 @@ const Analytics = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [assignmentsRes, allSubmissionsData] = await Promise.all([
-        assignmentService.getAll(),
-        loadAllSubmissions(),
-      ]);
+      const assignmentsRes = await assignmentService.getAll();
+      const assignmentsList = assignmentsRes.assignments || [];
+      setAssignments(assignmentsList);
 
-      setAssignments(assignmentsRes.assignments || []);
+      const allSubmissionsData = await loadAllSubmissions(assignmentsList);
       setSubmissions(allSubmissionsData);
     } catch (err) {
       setError(err.message || "Failed to load analytics data");
@@ -34,11 +33,8 @@ const Analytics = () => {
     }
   };
 
-  const loadAllSubmissions = async () => {
+  const loadAllSubmissions = async (assignmentsList) => {
     try {
-      const assignmentsRes = await assignmentService.getAll();
-      const assignmentsList = assignmentsRes.assignments || [];
-
       const submissionsPromises = assignmentsList.map(async (assignment) => {
         try {
           const subRes = await submissionService.getSubmissionsByAssignment(

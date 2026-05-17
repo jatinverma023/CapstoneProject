@@ -14,7 +14,7 @@ const GradeSubmission = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const BACKEND_BASE = import.meta.env.VITE_API_URL.replace("/api/v1", "");
+
   const [gradeData, setGradeData] = useState({
     grade: "",
     feedback: "",
@@ -261,7 +261,7 @@ const GradeSubmission = () => {
                     {submission.file_urls.map((url, index) => (
                       <a
                         key={index}
-                        href={`${url.startsWith("http") ? "" : BACKEND_BASE}${url}`}
+                        href={url}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"
@@ -280,7 +280,7 @@ const GradeSubmission = () => {
                     Attachment:
                   </p>
                   <a
-                    href={`${submission.file_url.startsWith("http") ? "" : BACKEND_BASE}${submission.file_url}`}
+                    href={submission.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"

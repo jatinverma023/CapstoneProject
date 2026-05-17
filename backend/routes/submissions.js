@@ -180,73 +180,67 @@ router.get('/:id', protect, async (req, res) => {
   }
 });
 
-
-router.post(
-  '/submit/:assignmentId',
-  protect,
-  authorize('student'),
-  upload.array('files', 5),
-  async (req, res) => {
-    try {
-      const { assignmentId } = req.params;
-      const { text_submission } = req.body;
-
-      // Find assignment
-      const assignment = await Assignment.findById(assignmentId);
-      if (!assignment) {
-        return res.status(404).json({
-          success: false,
-          message: 'Assignment not found',
-        });
-      }
-
-      // Check if already submitted
-      const existingSubmission = await Submission.findOne({
-        assignment_id: assignmentId,
-        student_id: req.user._id,
-      });
-
-      if (existingSubmission) {
-        return res.status(400).json({
-          success: false,
-          message: 'You have already submitted this assignment',
-        });
-      }
-
-      // ✅ Process uploaded files (Cloudinary URLs)
-      const file_urls = (req.files || []).map((file) => file.path);
-
-      // Check if late
-      const submitted_at = new Date();
-      const is_late = submitted_at > assignment.due_date;
-
-      // Create submission
-      const submission = await Submission.create({
-        assignment_id: assignmentId,
-        student_id: req.user._id,
-        text_submission: text_submission || '',
-        file_urls,
-        submitted_at,
-        is_late,
-      });
-
-      await submission.populate('assignment_id', 'title due_date');
-
-      res.status(201).json({
-        success: true,
-        message: 'Assignment submitted successfully',
-        submission,
-      });
-    } catch (error) {
-      console.error('Submit assignment error:', error);
-      res.status(500).json({
+// @route   POST /api/v1/submissions/:id/grade
+// @desc    Grade a submission (Teacher only)
+// @access  Private/Teacher
+router.post('/:id/grade', protect, authorize('teacher', 'admin'), async (req, res) => {
+  try {
+    const submission = await Submission.findById(req.params.id);
+    if (!submission) {
+      return res.status(404).json({
         success: false,
-        message: 'Error submitting assignment',
-        error: error.message,
+        message: 'Submission not found'
       });
     }
+
+    const { grade, feedback, rubric_scores } = req.body;
+
+    if (grade === undefined || grade === null) {
+      return res.status(400).json({
+        success: false,
+        message: 'Grade is required'
+      });
+    }
+
+    // Validate grade against assignment maxMarks
+    const assignment = await Assignment.findById(submission.assignment_id);
+    if (assignment && grade > assignment.maxMarks) {
+      return res.status(400).json({
+        success: false,
+        message: `Grade cannot exceed ${assignment.maxMarks}`
+      });
+    }
+
+    submission.grade = grade;
+    submission.feedback = feedback || '';
+    submission.graded = true;
+    submission.graded_by = req.user._id;
+    submission.graded_at = new Date();
+
+    // Map rubric scores to match schema (frontend sends name/score, schema expects criterionName/marksAwarded)
+    if (rubric_scores && rubric_scores.length > 0) {
+      submission.rubric_scores = rubric_scores.map(s => ({
+        criterionName: s.name || s.criterionName,
+        marksAwarded: s.score !== undefined ? s.score : s.marksAwarded
+      }));
+    }
+
+    await submission.save();
+
+    res.json({
+      success: true,
+      message: 'Submission graded successfully',
+      submission
+    });
+  } catch (error) {
+    console.error('Grade submission error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error grading submission',
+      error: error.message
+    });
   }
-);
+});
 
 // @route   GET /api/v1/submissions/assignment/:assignmentId/student
 // @desc    Get student's submission for specific assignment

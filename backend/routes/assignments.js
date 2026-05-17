@@ -130,9 +130,16 @@ router.put('/:id', protect, authorize('teacher', 'admin'), async (req, res) => {
       });
     }
 
+    // Allowlist fields to prevent mass-assignment attacks
+    const allowedFields = ['title', 'description', 'due_date', 'maxMarks', 'isActive', 'allowLateSubmission', 'rubric', 'attachments'];
+    const updates = {};
+    Object.keys(req.body).forEach(k => {
+      if (allowedFields.includes(k)) updates[k] = req.body[k];
+    });
+
     assignment = await Assignment.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updates,
       { new: true, runValidators: true }
     );
 

@@ -78,8 +78,8 @@ const SubmitAssignment = () => {
       return;
     }
 
-    if (isOverdue(assignment.due_date)) {
-      setError("This assignment is overdue");
+    if (isOverdue(assignment.due_date) && !assignment.allowLateSubmission) {
+      setError("This assignment is overdue and late submissions are not allowed");
       return;
     }
 
@@ -118,7 +118,7 @@ const SubmitAssignment = () => {
 
   const overdue = isOverdue(assignment.due_date);
   const canSubmit =
-    !existingSubmission || (!existingSubmission.graded && !overdue);
+    !existingSubmission || (!existingSubmission.graded && (!overdue || assignment.allowLateSubmission));
 
   if (existingSubmission && existingSubmission.graded) {
     return (
@@ -139,7 +139,7 @@ const SubmitAssignment = () => {
     );
   }
 
-  if (overdue && !existingSubmission) {
+  if (overdue && !existingSubmission && !assignment.allowLateSubmission) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

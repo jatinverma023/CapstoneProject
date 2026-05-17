@@ -131,19 +131,7 @@ router.get('/status', protect, async (req, res) => {
   }
 });
 
-// ⭐ NEW: Test API connection (useful for debugging)
-router.post('/test', protect, async (req, res) => {
-  try {
-    const result = await chatbotService.testKey();
-    res.json(result);
-  } catch (error) {
-    console.error('Test Error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: error.message 
-    });
-  }
-});
+
 
 // Get assignment-specific help (legacy endpoint - can be removed if unused)
 router.post('/help/:assignmentId', protect, async (req, res) => {

@@ -80,7 +80,7 @@ exports.studentTrend = async (req, res, next) => {
     }
 
     // If teacher, limit to assignments owned by teacher (optional)
-    const matchStage = { student_id: mongoose.Types.ObjectId(studentId), graded: true };
+    const matchStage = { student_id: new mongoose.Types.ObjectId(studentId), graded: true };
 
     if (requester.role === 'teacher') {
       // get assignments by this teacher

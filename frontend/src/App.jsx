@@ -152,15 +152,8 @@ function App() {
             }
           />
 
-          {/* Teacher Routes */}
-          <Route
-            path="/teacher/dashboard"
-            element={
-              <ProtectedRoute role="teacher">
-                <TeacherDashboard />
-              </ProtectedRoute>
-            }
-          />
+
+
 
           {/* Student Routes */}
           <Route

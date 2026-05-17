@@ -239,20 +239,23 @@ const AssignmentDetails = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <p className="font-semibold text-gray-900 mb-2">Your Work:</p>
               <p className="text-gray-700 whitespace-pre-wrap">
-                {submission.content}
+                {submission.text_submission || submission.content || 'No content submitted'}
               </p>
             </div>
 
-            {submission.file_url && (
-              <div className="mt-4">
-                <a
-                  href={submission.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  📎 View Attached File
-                </a>
+            {submission.file_urls && submission.file_urls.length > 0 && (
+              <div className="mt-4 space-y-2">
+                {submission.file_urls.map((url, index) => (
+                  <a
+                    key={index}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mr-2"
+                  >
+                    📎 View Attachment {submission.file_urls.length > 1 ? index + 1 : ''}
+                  </a>
+                ))}
               </div>
             )}
           </div>
