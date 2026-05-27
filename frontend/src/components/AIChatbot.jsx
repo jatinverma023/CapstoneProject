@@ -82,10 +82,16 @@ const AIChatbot = ({ assignmentId = null, assignmentTitle = null }) => {
     setLoading(true);
 
     try {
+      // Build conversation history from messages state
+      const history = messages.map((m) => ({
+        sender: m.role,
+        text: m.content,
+      }));
+
       const result = await chatbotService.sendMessage(
         trimmed,
         assignmentId,
-        [],
+        history,
       );
 
       console.log("AI RESULT:", result); // Debug log
@@ -168,8 +174,7 @@ const AIChatbot = ({ assignmentId = null, assignmentTitle = null }) => {
 
   // Handle quick question
   const handleQuickQuestion = (question) => {
-    setInput(question);
-    setTimeout(() => sendUserMessage(question), 50);
+    sendUserMessage(question);
   };
 
   return (
@@ -276,6 +281,23 @@ const AIChatbot = ({ assignmentId = null, assignmentTitle = null }) => {
 
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Quick Questions */}
+          {messages.length <= 1 && !loading && (
+            <div className="flex flex-wrap gap-2 px-5 py-2 border-t border-gray-100">
+              {quickQuestions.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleQuickQuestion(q)}
+                  className="text-xs px-3 py-1.5 bg-purple-50 text-purple-700
+                    rounded-full hover:bg-purple-100 transition-colors
+                    border border-purple-200/50"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input */}
           <form

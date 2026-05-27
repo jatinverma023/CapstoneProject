@@ -62,6 +62,7 @@ export const chatbotService = {
           success: true,
           response: data.response,
           mode: data.mode,
+          metadata: data.metadata,
           status: response.status,
           raw: data,
         };

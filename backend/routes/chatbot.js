@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const chatbotService = require('../services/chatbotService');
-const { protect } = require('../middleware/auth');
+const { protect, authorize } = require('../middleware/auth');
 const Assignment = require('../models/Assignment');
 
 // ⭐ Rate limiting per user (in-memory, simple)
@@ -36,6 +36,14 @@ function checkRateLimit(userId) {
   userLimit.count++;
   return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - userLimit.count };
 }
+
+// Purge expired rate-limit entries every 5 minutes to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of userRateLimits) {
+    if (now > val.resetAt) userRateLimits.delete(key);
+  }
+}, 5 * 60 * 1000);
 
 // Chat with AI Assistant
 router.post('/chat', protect, async (req, res) => {
@@ -132,60 +140,21 @@ router.get('/status', protect, async (req, res) => {
 });
 
 
-
-// Get assignment-specific help (legacy endpoint - can be removed if unused)
-router.post('/help/:assignmentId', protect, async (req, res) => {
+// Reset circuit breaker (admin only)
+router.post('/reset', protect, authorize('admin'), async (req, res) => {
   try {
-    const { assignmentId } = req.params;
-    const { question } = req.body;
-
-    if (!question || !question.trim()) {
-      return res.status(400).json({ message: 'Question is required' });
-    }
-
-    const assignment = await Assignment.findById(assignmentId);
-    const assignmentContext = assignment ? {
-      title: assignment.title,
-      description: assignment.description,
-      due_date: assignment.due_date,
-      maxMarks: assignment.maxMarks
-    } : null;
-
-    const result = await chatbotService.chat(question, assignmentContext);
-
+    const result = chatbotService.resetCircuit();
     res.json({
       success: true,
-      response: result.message,
-      mode: result.mode
+      message: 'Circuit breaker reset successfully',
+      ...result
     });
-
   } catch (error) {
-    console.error('Help Error:', error);
-    res.status(500).json({ message: 'Failed to get help' });
-  }
-});
-
-// Get learning resources (can use chat endpoint instead)
-router.post('/resources', protect, async (req, res) => {
-  try {
-    const { topic } = req.body;
-
-    if (!topic) {
-      return res.status(400).json({ message: 'Topic is required' });
-    }
-
-    const message = `Suggest learning resources for: ${topic}`;
-    const result = await chatbotService.chat(message);
-
-    res.json({
-      success: true,
-      response: result.message,
-      mode: result.mode
+    console.error('Reset Error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to reset circuit breaker' 
     });
-
-  } catch (error) {
-    console.error('Resources Error:', error);
-    res.status(500).json({ message: 'Failed to get resources' });
   }
 });
 
